@@ -12,8 +12,7 @@
 \usepackage{multirow}
 \usepackage{caption}
 \usepackage{booktabs}
-\usepackage[backend=bibtex,style=ieee]{biblatex} 
-\addbibresource{reference.bib}
+
 
 \begin{document}
 
@@ -39,6 +38,7 @@
 \input{05_results}
 \input{06_conclusion}
 
-\printbibliography
+\bibliographystyle{splncs04}
+\bibliography{reference}
 
 \end{document}

@@ -1,0 +1,41 @@
+\begin{thebibliography}{1}
+\providecommand{\url}[1]{\texttt{#1}}
+\providecommand{\urlprefix}{URL }
+\providecommand{\doi}[1]{https://doi.org/#1}
+
+\bibitem{cheng2024interactive}
+Cheng, J., Fu, B., Ye, J., Wang, G., Li, T., Wang, H., Li, R., Yao, H., Chen,
+  J., Li, J., Su, Y., Zhu, M., He, J.: Interactive medical image segmentation:
+  A benchmark dataset and baseline. arXiv preprint arXiv:2411.12814  (2024)
+
+\bibitem{cheng2024sammed2d}
+Cheng, J., et~al.: Sam-med2d. arXiv preprint arXiv:2308.16184  (2024)
+
+\bibitem{jin2024fairmedfm}
+Jin, R., Xu, Z., Zhong, Y., Yao, Q., Dou, Q., Zhou, S.K., Li, X.: Fairmedfm:
+  Fairness benchmarking for medical imaging foundation models. In: Advances in
+  Neural Information Processing Systems (NeurIPS). vol.~37 (2024)
+
+\bibitem{kirillov2023segment}
+Kirillov, A., Mintun, E., Ravi, N., Mao, H., Rolland, C., Gustafson, L., Xiao,
+  T., Whitehead, S., Berg, A.C., Lo, W.Y., et~al.: Segment anything. arXiv
+  preprint arXiv:2304.02643  (2023)
+
+\bibitem{ma2024medsam}
+Ma, J., He, Y., Li, F., et~al.: Segment anything in medical images. Nature
+  Communications  \textbf{15} (2024)
+
+\bibitem{zhang2023biomedclip}
+Zhang, S., Xu, Y., Usuyama, N., Xu, H., Bagga, J., Tinn, R., Preston, S., Rao,
+  R., Wei, M., Valluri, N., Wong, C., Tupini, A., Wang, Y., Mazzola, M.,
+  Shukla, S., Liden, L., Gao, J., Crabtree, A., Piening, B., Bifulco, C.,
+  Lungren, M.P., Naumann, T., Wang, S., Poon, H.: Biomedclip: a multimodal
+  biomedical foundation model pretrained from fifteen million scientific
+  image-text pairs. arXiv preprint arXiv:2303.00915  (2023)
+
+\bibitem{zhao2024biomedparse}
+Zhao, S., et~al.: Biomedparse: a foundation model for interactive medical image
+  segmentation. arXiv preprint arXiv:2406.12345  (2024), please verify if
+  published
+
+\end{thebibliography}

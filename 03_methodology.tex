@@ -5,7 +5,7 @@ To mitigate Semantic Collapse, we depart from the standard "Early Fusion" paradi
 
 \begin{itemize}
     \item \textbf{Visual Stream}: A ViT-Base backbone extracts multi-scale spatial features ($F_v$).
-    \item \textbf{Semantic Stream}: A context-aware text encoder (BioMedCLIP) processes the prompt. Crucially, we introduce an \textbf{Attribute Attention Module} that isolates adjectival tokens (e.g., "necrotic", "enhancing") from nominal tokens (e.g., "tumor").
+    \item \textbf{Semantic Stream}: A context-aware text encoder (BioMedCLIP~\cite{zhang2023biomedclip}) processes the prompt. Crucially, we introduce an \textbf{Attribute Attention Module} that isolates adjectival tokens (e.g., "necrotic", "enhancing") from nominal tokens (e.g., "tumor").
     \item \textbf{The Innovation: Cross-Modal Semantic Gating (CMSG)}: Unlike simple concatenation, CMSG uses the Attribute embeddings to "gate" the skip connections of the decoder.
 \end{itemize}
 
