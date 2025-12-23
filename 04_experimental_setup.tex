@@ -1,37 +1,36 @@
-\section{Construction of SemantiBench}
+\section{SemantiBench Dataset}
 \label{sec:benchmark}
 
-To rigorously quantify Semantic Collapse, we depart from the static class labels used in prior benchmarks (e.g., MSD, FairMedFM) and introduce \textbf{SemantiBench}, a dynamic evaluation suite comprising 100,000+ hierarchically stratified prompt-mask pairs.
+To evaluate robustness, we introduce SemantiBench, a dynamic evaluation suite with over 100,000 hierarchically stratified prompt-mask pairs.
 
-\paragraph{Data Source and Harmonization.} 
-We aggregate data from three high-quality public repositories: the Medical Segmentation Decathlon (MSD), KiTS23, and BraTS2024. These datasets were selected for their high spatial resolution and diversity of target structures (tumors, organs, vessels). 
-Prior to prompt generation, we performed a rigorous harmonization process. All volumes were resampled to a standardized isotropic spacing of $1.0 \times 1.0 \times 1.0$ mm and normalized to the $[0, 1]$ intensity range using windowing levels specific to each modality (e.g., lung windows for CT, T2-weighted for MRI). This mitigates domain shifts unrelated to semantic processing.
+\paragraph{Data Source.} 
+We aggregated data from three public repositories: the Medical Segmentation Decathlon (MSD), KiTS23, and BraTS2024. These datasets provide high spatial resolution and diverse target structures (tumors, organs, vessels). We resampled all volumes to a standardized isotropic spacing of $1.0 \times 1.0 \times 1.0$ mm and normalized them to the $[0, 1]$ intensity range using modality-specific windowing (e.g., lung windows for CT, T2-weighted for MRI).
 
-\paragraph{The Automated Semantic Stress-Test Pipeline.}
-A core contribution of this work is the \textit{Automated Semantic Stress-Test Pipeline}, an agentic workflow capable of transforming static labels into complex clinical directives. Unlike simple template-based augmentation, our pipeline utilizes a Chain-of-Thought (CoT) reasoning process driven by a Large Language Model (GPT-4) to generate prompts at three distinct levels of granularity ($L_g$).
+\paragraph{Stress-Test Pipeline.}
+We implemented an automated pipeline to generate prompts at three complexity levels ($L_g$). Using a Large Language Model (GPT-4), we transformed static labels into clinical directives:
 \begin{itemize}
-    \item \textbf{Level 1: Atomic Grounding ($L_1$).} The agent extracts the canonical SNOMED-CT anatomical term.
-    \item \textbf{Level 2: Visual Descriptive ($L_2$).} The agent augments the noun with radiomic features observable in the image (e.g., intensity, shape, texture).
-    \item \textbf{Level 3: Clinical Exclusion ($L_3$).} The agent synthesizes complex exclusion criteria mimicking radiology reports (e.g., \textit{"Segment the heterogeneous mass in the right kidney, excluding the benign cyst and renal pelvis"}).
+    \item \textbf{Level 1 ($L_1$):} Canonical anatomical terms (e.g., "Kidney").
+    \item \textbf{Level 2 ($L_2$):} Direct visual descriptors, including intensity, shape, and texture information.
+    \item \textbf{Level 3 ($L_3$):} Exclusion criteria and complex spatial relationships (e.g., "Heterogeneous mass in the right kidney, excluding the cyst").
 \end{itemize}
 
-\paragraph{Quality Control: The Critic Agent.}
-To prevent "hallucination"---where the generated prompt describes features not present in the image---we implemented a \textit{Dual-Agent Architecture}. A secondary "Critic Agent" reviews the generated $L_3$ prompts against the metadata of the ground truth mask. If the Critic detects a semantic contradiction (e.g., describing a "solid tumor" when the mean Hounsfield Unit indicates a fluid-filled cyst), the prompt is discarded and regenerated. This Adversarial Quality Assurance (AQA) loop ensures that SemantiBench measures model robustness, not tolerance to incorrect prompts.
+\paragraph{Quality Control.}
+To prevent mismatched prompts, we used a secondary verification step. A separate model checked the generated $L_3$ prompts against the ground truth metadata. Prompts containing contradictions (like describing a fluid-filled cyst as a solid tumor) were regenerated.
 
 \paragraph{Dataset Statistics.}
-The final SemantiBench-100K dataset contains 12,000 unique volumes and 108,000 prompt variations, covering 14 anatomical structures across CT and MRI modalities. Crucially, the dataset is balanced across complexity levels, with a 1:1:1 ratio of $L_1$, $L_2$, and $L_3$ prompts, enabling unbiased sensitivity analysis.
+The SemantiBench-100K dataset contains 12,000 unique volumes and 108,000 prompt variations across 14 anatomical structures in CT and MRI. The dataset is balanced with a 1:1:1 ratio of $L_1$, $L_2$, and $L_3$ prompts.
 
 \section{Experiments}
 \label{sec:experiments}
 
 \paragraph{Implementation Details.}
-SemantiSeg was implemented in PyTorch and trained on 4 NVIDIA A100 (80GB) GPUs. We utilized the AdamW optimizer with a base learning rate of $1e^{-4}$ and a cosine decay schedule. Images were resized to $352 \times 352$ to preserve high-frequency details for the DWT module. To ensure robustness, we employed heavy data augmentation, including Elastic Deformations and Grid Distortion, via the Albumentations library.
+We implemented SemantiSeg in PyTorch and trained it on 4 NVIDIA A100 GPUs. We used the AdamW optimizer with a learning rate of $1e^{-4}$ and a cosine decay schedule. Images were resized to $352 \times 352$ for the DWT module. We applied data augmentation, including elastic deformations and grid distortion, using Albumentations.
 
 \paragraph{Baselines.}
-We benchmark against three state-of-the-art foundation models:
-(1) \textbf{BiomedParse} \cite{zhao2024biomedparse}: The current SOTA for joint parsing, utilizing a standard CLIP-based backbone.
-(2) \textbf{SAM-Med2D} \cite{cheng2024sammed2d}: An adapter-based fine-tuning of the Segment Anything Model, representing the "Shape-Bias" baseline.
-(3) \textbf{FMISeg}: A frequency-domain fusion baseline without our CMSG module, included to isolate the contribution of our semantic gating mechanism.
+We compared our method against three foundation models:
+(1) \textbf{BiomedParse}~\cite{zhao2024biomedparse}: A joint parsing model using a CLIP-based backbone.
+(2) \textbf{SAM-Med2D}~\cite{cheng2024sammed2d}: An adapter-based finetuned version of the Segment Anything Model.
+(3) \textbf{FMISeg}: A frequency-domain fusion baseline without the semantic gating module, used as an ablation.
 
-\paragraph{Main Results: The Semantic Collapse.}
-Table 1 presents the quantitative comparison on SemantiBench.
+\paragraph{Results on SemantiBench.}
+Table 1 shows the quantitative results.
