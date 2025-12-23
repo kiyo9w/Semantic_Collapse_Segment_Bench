@@ -1,0 +1,23 @@
+\section{Results}
+\label{sec:results}
+
+Table \ref{tab:results} reveals the fragility of existing models.
+
+\begin{table}[h]
+\centering
+\caption{Performance Comparison on SemantiBench.}
+\label{tab:results}
+\begin{tabular}{l|cc|c}
+\toprule
+\textbf{Model} & \textbf{L1 Dice (Simple)} & \textbf{L3 Dice (Complex)} & \textbf{PSS (Sensitivity)} \\
+\midrule
+BiomedParse & 0.85 & 0.60 & 0.29 \\
+SAM-Med2D   & 0.82 & 0.55 & 0.33 \\
+\textbf{SemantiSeg (Ours)} & \textbf{0.86} & \textbf{0.81} & \textbf{0.05} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Analysis:} BiomedParse suffers a \textbf{29\% Semantic Collapse}. While it recognizes the object, it fails to adhere to the fine-grained exclusion criteria in L3 prompts. Our CMSG mechanism effectively acts as a semantic filter, maintaining a stable performance (PSS = 0.05).
+
+In the "Necrotic Core" task, BiomedParse segments the \textit{entire} tumor, failing to distinguish the core. This confirms it treats the prompt as a generic class label ("Tumor"). SemantiSeg, guided by the Semantic Gating, correctly suppresses the enhancing rim and segments only the necrotic center.

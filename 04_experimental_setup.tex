@@ -1,0 +1,16 @@
+\section{Experimental Setup}
+\label{sec:experiments}
+
+Instead of using a static dataset, we constructed \textbf{SemantiBench} by processing the Medical Segmentation Decathlon (MSD) and KiTS datasets through our agentic pipeline.
+
+\begin{itemize}
+    \item \textbf{Total Samples:} 12,000 Test Images (part of the larger 100K+ paired dataset).
+    \item \textbf{Stratification:} Each image is paired with three prompts:
+    \begin{itemize}
+        \item \textbf{L1 (Simple):} "Kidney Tumor"
+        \item \textbf{L2 (Descriptive):} "Right kidney tumor with irregular boundaries"
+        \item \textbf{L3 (Complex):} "Necrotic core of the right kidney tumor"
+    \end{itemize}
+\end{itemize}
+
+We benchmark against \textbf{BiomedParse} (Semantic SOTA), \textbf{SAM-Med2D} (Vision SOTA), and \textbf{FMISeg} (Frequency-domain SOTA).

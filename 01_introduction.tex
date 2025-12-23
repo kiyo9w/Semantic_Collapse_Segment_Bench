@@ -1,0 +1,16 @@
+\section{Introduction}
+\label{sec:intro}
+
+The paradigm of "Segment Anything" has shifted the medical imaging landscape from specialized, task-specific networks to universal, promptable foundation models \cite{kirillov2023segment,zhao2024biomedparse}. Recent works such as BiomedParse \cite{zhao2024biomedparse} and MedSAM \cite{ma2024medsam} have demonstrated impressive capabilities in parsing diverse biomedical objects using natural language prompts, promising a future of zero-shot clinical applicability. However, a critical gap remains between this promise and clinical reality: \textbf{Semantic Robustness}.
+
+Current evaluations are deceptively optimistic because they predominantly test on "Atomic" ($L_1$) queries---simple anatomical nouns like \textit{"liver"} or \textit{"lung"}. In contrast, real-world clinical directives are often "Complex" ($L_3$)---attribute-rich descriptions requiring compositional reasoning, such as \textit{"hypodense lesion in segment IV excluding the portal vein"}. We observe a phenomenon we term \textbf{Semantic Collapse}, where foundational models, overwhelmed by complex syntax, revert to segmenting the dominant anatomical structure rather than the specific pathological sub-region. As illustrated in Fig.~\ref{fig:teaser}, when prompted with \textit{"necrotic tumor core"}, state-of-the-art (SOTA) models often ignore the adjectival constraint ("necrotic") and segment the noun ("tumor"), resulting in clinically dangerous false positives.
+
+\begin{figure}[t]
+    \centering
+    % [PLACEHOLDER: Teaser Image]
+    \includegraphics[width=\textwidth]{figures/teaser_fig.png} 
+    \caption{\textbf{Semantic Collapse in Action.} When prompted with \textit{"Necrotic Tumor Core"} (an $L_3$ complex query), standard foundational models like BiomedParse (Left) fail to ground the adjective "necrotic," defaulting to segmenting the entire tumor mass. In contrast, our proposed SemantiSeg (Right) utilizes Cross-Modal Semantic Gating to respect the linguistic exclusion criteria, correctly identifying only the necrotic center.}
+    \label{fig:teaser}
+\end{figure}
+
+To quantify and mitigate this failure mode, we present three primary contributions. First, we introduce \textbf{SemantiBench}, moving beyond static datasets to a dynamic evaluation protocol. We constructed a \textit{Semantic Stress-Test Pipeline} using agentic Large Language Models (LLMs) to generate hierarchically stratified prompts (Atomic $L_1$, Descriptive $L_2$, Complex $L_3$) for standard datasets, enabling the first systematic measurement of semantic fragility. Second, we propose the \textbf{Prompt Sensitivity Score (PSS)}, a new metric that quantifies the "robustness gap" between simple and complex queries. Our benchmarking reveals that current SOTA models suffer a high PSS (up to 0.29), indicating severe instability. Third, we propose \textbf{SemantiSeg}, a novel architecture utilizing \textit{Cross-Modal Semantic Gating (CMSG)} to dynamically filter spatial features based on textual attributes, reducing the PSS to $<0.05$.

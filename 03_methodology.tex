@@ -1,0 +1,14 @@
+\section{Methodology}
+\label{sec:method}
+
+To mitigate Semantic Collapse, we depart from the standard "Early Fusion" paradigm used in SAM. Instead, we propose a \textbf{Late-Interaction Gated Architecture}:
+
+\begin{itemize}
+    \item \textbf{Visual Stream}: A ViT-Base backbone extracts multi-scale spatial features ($F_v$).
+    \item \textbf{Semantic Stream}: A context-aware text encoder (BioMedCLIP) processes the prompt. Crucially, we introduce an \textbf{Attribute Attention Module} that isolates adjectival tokens (e.g., "necrotic", "enhancing") from nominal tokens (e.g., "tumor").
+    \item \textbf{The Innovation: Cross-Modal Semantic Gating (CMSG)}: Unlike simple concatenation, CMSG uses the Attribute embeddings to "gate" the skip connections of the decoder.
+\end{itemize}
+
+\textit{Intuition:} If the prompt says "necrotic" (dark texture), the gate suppresses high-intensity features in the skip connection, forcing the decoder to focus only on dark regions.
+
+We introduce a loss function that penalizes "attribute hallucination." It maximizes the cosine similarity between the average visual embedding of the predicted mask and the text embedding of the prompt's adjectives.
