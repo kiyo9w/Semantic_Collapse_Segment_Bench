@@ -1,14 +1,37 @@
-\section{Methodology}
+\section{Methodology: The SemantiSeg Network}
 \label{sec:method}
 
-To mitigate Semantic Collapse, we depart from the standard "Early Fusion" paradigm used in SAM. Instead, we propose a \textbf{Late-Interaction Gated Architecture}:
+We attribute the phenomenon of Semantic Collapse to the "Low-Pass Filter" bias inherent in standard Vision Transformers (ViT) \cite{park2022vision}. While ViTs excel at global semantic alignment, they struggle to preserve the high-frequency spatial details required to resolve fine-grained adjectives like "spiculated" or "necrotic." To address this, SemantiSeg introduces a \textbf{Dual-Stream Frequency-Semantic Architecture}.
 
-\begin{itemize}
-    \item \textbf{Visual Stream}: A ViT-Base backbone extracts multi-scale spatial features ($F_v$).
-    \item \textbf{Semantic Stream}: A context-aware text encoder (BioMedCLIP~\cite{zhang2023biomedclip}) processes the prompt. Crucially, we introduce an \textbf{Attribute Attention Module} that isolates adjectival tokens (e.g., "necrotic", "enhancing") from nominal tokens (e.g., "tumor").
-    \item \textbf{The Innovation: Cross-Modal Semantic Gating (CMSG)}: Unlike simple concatenation, CMSG uses the Attribute embeddings to "gate" the skip connections of the decoder.
-\end{itemize}
+\paragraph{Stream 1: The Semantic Context Encoder.}
+We employ a \textbf{BiomedCLIP ViT-B/16} backbone to extract global semantic features. Unlike previous approaches that freeze the encoder, we utilize a \textit{Partial-Finetuning Strategy}, unfreezing the final Transformer blocks (Layers 9-11) to allow adaptation to task-specific medical ontologies without catastrophic forgetting.
+Given an input image $X \in \mathbb{R}^{H \times W \times 3}$, this stream produces a high-level semantic feature map $F_{sem} \in \mathbb{R}^{14 \times 14 \times 512}$.
 
-\textit{Intuition:} If the prompt says "necrotic" (dark texture), the gate suppresses high-intensity features in the skip connection, forcing the decoder to focus only on dark regions.
+\paragraph{Stream 2: The Frequency-Aware Spatial Encoder.}
+To recover the spatial information lost by patchification, we introduce a dedicated Frequency Stream.
+First, the input $X$ undergoes a \textbf{Discrete Wavelet Transform (DWT)} using 2D Haar wavelets, decomposing the image into four spectral components:
+\begin{equation}
+    \text{DWT}(X) = \{ X_{LL}, X_{LH}, X_{HL}, X_{HH} \}
+\end{equation}
+where $X_{LL}$ represents the low-frequency approximation, and $\{X_{LH}, X_{HL}, X_{HH}\}$ capture horizontal, vertical, and diagonal high-frequency details (textures/edges).
+These components are concatenated to form a 12-channel tensor $X_{freq}$, which is processed by a \textbf{ConvNeXt-Tiny} encoder. By explicitly feeding frequency bands into the network, we force the model to learn independent representations for "Shape" ($LL$) and "Texture" ($HH$), providing the necessary signal to ground fine-grained adjectives.
 
-We introduce a loss function that penalizes "attribute hallucination." It maximizes the cosine similarity between the average visual embedding of the predicted mask and the text embedding of the prompt's adjectives.
+\paragraph{Cross-Modal Semantic Gating (CMSG).}
+A critical innovation of SemantiSeg is the mechanism for fusing these divergent streams. Naive concatenation often leads to semantic dominance. Instead, we propose \textbf{Cross-Modal Semantic Gating}, which uses the text embedding $E_{text}$ to dynamically modulate the frequency stream.
+Let $F_{freq}^{(i)}$ be the feature map from the $i$-th stage of the ConvNeXt encoder. We compute a gating scalar $\alpha \in [0, 1]$:
+\begin{equation}
+    \alpha = \sigma ( \text{MLP}(E_{text} \odot \text{GlobalAvgPool}(F_{sem})) )
+\end{equation}
+The fused feature map $F_{fused}$ is computed as:
+\begin{equation}
+    F_{fused} = F_{sem}^{up} + (1 + \alpha) \cdot F_{freq}
+\end{equation}
+This gating mechanism allows the network to "amplify" the frequency stream when the text prompt implies high-frequency constraints (e.g., "rough boundary") while suppressing it for simple object queries.
+
+\paragraph{Optimization via Hard Negative Mining.}
+Training is optimized using a compound objective function $\mathcal{L}_{total} = \lambda_1 \mathcal{L}_{Dice} + \lambda_2 \mathcal{L}_{DHN}$.
+We introduce the \textbf{Dynamic Hard Negative (DHN) Loss} to handle the extreme class imbalance in fine-grained segmentation. The DHN loss identifies pixels where the model's confidence is low ($p < 0.5$) and dynamically upweights them during backpropagation:
+\begin{equation}
+    \mathcal{L}_{DHN} = - \sum_{i \in \Omega} w_i \cdot y_i \log(p_i), \quad \text{where } w_i = (1 - p_i)^\gamma
+\end{equation}
+This forces the model to focus on the difficult boundary regions characteristic of $L_3$ prompts.

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1) (preloaded format=pdflatex 2025.12.24)  24 DEC 2025 06:24
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1) (preloaded format=pdflatex 2025.12.24)  24 DEC 2025 06:34
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -629,48 +629,76 @@ ogram Files/MiKTeX/fonts/enc/dvips/lm/lm-ec.enc}{C:/Program Files/MiKTeX/fonts/
 enc/dvips/lm/lm-rm.enc}{C:/Program Files/MiKTeX/fonts/enc/dvips/lm/lm-mathit.en
 c}{C:/Program Files/MiKTeX/fonts/enc/dvips/lm/lm-ts1.enc}]) (02_related_work.te
 x [2{C:/Program Files/MiKTeX/fonts/enc/dvips/lm/lm-mathsy.enc}]) (03_methodolog
-y.tex [3]) (04_experimental_setup.tex
-Overfull \hbox (7.07214pt too wide) in paragraph at lines 7--8
-[]\T1/lmr/bx/n/10 Total Sam-ples: \T1/lmr/m/n/10 12,000 Test Im-ages (part of t
-he larger 100K+ paired dataset). 
+y.tex
+
+LaTeX Warning: Citation `park2022vision' on page 3 undefined on input line 4.
+
+
+Overfull \hbox (18.62433pt too wide) in paragraph at lines 7--9
+\U/msb/m/n/10 R[]$\T1/lmr/m/n/10 , this stream pro-duces a high-level se-man-ti
+c fea-ture map $\OML/lmm/m/it/10 F[] \OMS/lmsy/m/n/10 2 \U/msb/m/n/10 R[]$\T1/l
+mr/m/n/10 . 
  []
 
-) (05_results.tex
+[3]
+Overfull \hbox (2.3501pt too wide) in paragraph at lines 15--18
+\T1/lmr/m/n/10 cap-ture hor-i-zon-tal, ver-ti-cal, and di-ag-o-nal high-frequen
+cy de-tails (tex-tures/edges).
+ []
+
+) (04_experimental_setup.tex [4{C:/Program Files/MiKTeX/fonts/enc/dvips/lm/lm-m
+athex.enc}]
+Overfull \hbox (2.40419pt too wide) in paragraph at lines 11--12
+\T1/lmr/m/n/10 trans-form-ing static la-bels into com-plex clin-i-cal di-rec-ti
+ves. Un-like sim-ple template-
+ []
+
+[5]) (05_results.tex
 Overfull \hbox (0.56041pt too wide) in paragraph at lines 10--19
  [][] 
  []
 
-) (06_conclusion.tex) [4] (paper.bbl) [5] (paper.aux)
+) (06_conclusion.tex) (paper.bbl [6]) [7] (paper.aux)
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-01-04>
  ***********
+
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
 Package rerunfilecheck Info: File `paper.out' has not changed.
 (rerunfilecheck)             Checksum: 8D80330FB77E443B1AD87139FE6E5786;556.
  ) 
 Here is how much of TeX's memory you used:
- 12123 strings out of 474485
- 189787 string characters out of 5753524
+ 12150 strings out of 474485
+ 190124 string characters out of 5753524
  1936542 words of memory out of 5000000
- 34175 multiletter control sequences out of 15000+600000
- 612935 words of font info for 77 fonts, out of 8000000 for 9000
+ 34180 multiletter control sequences out of 15000+600000
+ 618908 words of font info for 79 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 63i,8n,67p,1228b,443s stack positions out of 10000i,1000n,20000p,200000b,200000s
-<C:/Program Files/MiKTeX/fonts/type1/public/lm/lmbx10.pfb><C:/Program Files/M
-iKTeX/fonts/type1/public/lm/lmbx12.pfb><C:/Program Files/MiKTeX/fonts/type1/pub
-lic/lm/lmbx9.pfb><C:/Program Files/MiKTeX/fonts/type1/public/lm/lmmi10.pfb><C:/
-Program Files/MiKTeX/fonts/type1/public/lm/lmmi7.pfb><C:/Program Files/MiKTeX/f
-onts/type1/public/lm/lmmi9.pfb><C:/Program Files/MiKTeX/fonts/type1/public/lm/l
-mr10.pfb><C:/Program Files/MiKTeX/fonts/type1/public/lm/lmr6.pfb><C:/Program Fi
-les/MiKTeX/fonts/type1/public/lm/lmr7.pfb><C:/Program Files/MiKTeX/fonts/type1/
-public/lm/lmr9.pfb><C:/Program Files/MiKTeX/fonts/type1/public/lm/lmri10.pfb><C
-:/Program Files/MiKTeX/fonts/type1/public/lm/lmri9.pfb><C:/Program Files/MiKTeX
-/fonts/type1/public/lm/lmsy10.pfb><C:/Program Files/MiKTeX/fonts/type1/public/l
-m/lmtt10.pfb><C:/Program Files/MiKTeX/fonts/type1/public/lm/lmtt12.pfb><C:/Prog
-ram Files/MiKTeX/fonts/type1/public/lm/lmtt9.pfb>
-Output written on paper.pdf (5 pages, 350494 bytes).
+ 63i,8n,67p,1228b,592s stack positions out of 10000i,1000n,20000p,200000b,200000s
+
+pdfTeX warning (dest): name{table.caption.11} has been referenced but does not 
+exist, replaced by a fixed one
+
+<C:/Program Files/MiKTeX/fonts/type1/public/lm/lmbx10.pfb><C:/Program Files/MiK
+TeX/fonts/type1/public/lm/lmbx12.pfb><C:/Program Files/MiKTeX/fonts/type1/publi
+c/lm/lmbx9.pfb><C:/Program Files/MiKTeX/fonts/type1/public/lm/lmex10.pfb><C:/Pr
+ogram Files/MiKTeX/fonts/type1/public/lm/lmmi10.pfb><C:/Program Files/MiKTeX/fo
+nts/type1/public/lm/lmmi7.pfb><C:/Program Files/MiKTeX/fonts/type1/public/lm/lm
+mi9.pfb><C:/Program Files/MiKTeX/fonts/type1/public/lm/lmr10.pfb><C:/Program Fi
+les/MiKTeX/fonts/type1/public/lm/lmr6.pfb><C:/Program Files/MiKTeX/fonts/type1/
+public/lm/lmr7.pfb><C:/Program Files/MiKTeX/fonts/type1/public/lm/lmr9.pfb><C:/
+Program Files/MiKTeX/fonts/type1/public/lm/lmri10.pfb><C:/Program Files/MiKTeX/
+fonts/type1/public/lm/lmri9.pfb><C:/Program Files/MiKTeX/fonts/type1/public/lm/
+lmsy10.pfb><C:/Program Files/MiKTeX/fonts/type1/public/lm/lmsy7.pfb><C:/Program
+ Files/MiKTeX/fonts/type1/public/lm/lmtt10.pfb><C:/Program Files/MiKTeX/fonts/t
+ype1/public/lm/lmtt12.pfb><C:/Program Files/MiKTeX/fonts/type1/public/lm/lmtt9.
+pfb><C:/Program Files/MiKTeX/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
+Output written on paper.pdf (7 pages, 393279 bytes).
 PDF statistics:
- 173 PDF objects out of 1000 (max. 8388607)
- 24 named destinations out of 1000 (max. 500000)
+ 224 PDF objects out of 1000 (max. 8388607)
+ 43 named destinations out of 1000 (max. 500000)
  9 words of extra memory for PDF output out of 10000 (max. 10000000)
 
