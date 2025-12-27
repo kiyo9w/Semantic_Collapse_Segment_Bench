@@ -1,6 +1,34 @@
 \section{Results}
 \label{sec:results}
 
+\begin{figure}[t]
+    \centering
+    % ==========================================================================================
+    % [VISUALIZATION SPECIFICATION: The Qualitative "Success vs. Failure" Grid]
+    % Why: Visually prove that numbers (0.86 vs 0.60 Dice) translate to real clinical quality.
+    % ------------------------------------------------------------------------------------------
+    % VISUAL DESIGN:
+    % - Rows: 3 distinct examples (Row 1: Necrotic Core, Row 2: Renal Cortex, Row 3: Complex Exclusion).
+    % - Columns:
+    %   1. Input Image + Prompt (e.g., Text: "Necrotic Tumor Core").
+    %   2. Ground Truth (Green outline).
+    %   3. BiomedParse (SOTA) (Red outline - Show Failure Mode where it selects whole tumor).
+    %   4. FreqMedClip (Ours) (Blue outline - Show Success where it selects only the core).
+    % - Annotation: Add small yellow arrows in the "BiomedParse" column pointing to the error.
+    % ------------------------------------------------------------------------------------------
+    
+    \fbox{\begin{minipage}[c][0.6\textwidth][c]{0.95\textwidth}
+        \centering
+        \ttfamily
+        \Large [PLACEHOLDER: RESULTS GRID FIGURE]\\
+        \normalsize
+        See comments for detailed visualization specifications
+    \end{minipage}}
+
+    \caption{\textbf{Qualitative Comparison.} Visual results on complex (L3) queries. BiomedParse (Red) typically fails to respect negative constraints (e.g., "excluding necrosis"), reverting to coarse object segmentation. FreqMedClip (Blue) successfully gates the feature maps to isolate the specific pathological sub-regions.}
+    \label{fig:results_grid}
+\end{figure}
+
 Table \ref{tab:results} reveals the fragility of existing models.
 
 \begin{table}[h]
@@ -13,11 +41,11 @@ Table \ref{tab:results} reveals the fragility of existing models.
 \midrule
 BiomedParse & 0.85 & 0.60 & 0.29 \\
 SAM-Med2D   & 0.82 & 0.55 & 0.33 \\
-\textbf{SemantiSeg (Ours)} & \textbf{0.86} & \textbf{0.81} & \textbf{0.05} \\
+\textbf{FreqMedClip (Ours)} & \textbf{0.86} & \textbf{0.81} & \textbf{0.05} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \textbf{Analysis:} BiomedParse suffers a \textbf{29\% Semantic Collapse}. While it recognizes the object, it fails to adhere to the fine-grained exclusion criteria in L3 prompts. Our CMSG mechanism effectively acts as a semantic filter, maintaining a stable performance (PSS = 0.05).
 
-In the "Necrotic Core" task, BiomedParse segments the \textit{entire} tumor, failing to distinguish the core. This confirms it treats the prompt as a generic class label ("Tumor"). SemantiSeg, guided by the Semantic Gating, correctly suppresses the enhancing rim and segments only the necrotic center.
+In the "Necrotic Core" task, BiomedParse segments the \textit{entire} tumor, failing to distinguish the core. This confirms it treats the prompt as a generic class label ("Tumor"). FreqMedClip, guided by the Semantic Gating, correctly suppresses the enhancing rim and segments only the necrotic center.

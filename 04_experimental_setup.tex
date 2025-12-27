@@ -1,36 +1,66 @@
-\section{SemantiBench Dataset}
+\section{Construction of SemantiBench}
 \label{sec:benchmark}
 
-To evaluate robustness, we introduce SemantiBench, a dynamic evaluation suite with over 100,000 hierarchically stratified prompt-mask pairs.
+\begin{figure}[t]
+    \centering
+    % ==========================================================================================
+    % [VISUALIZATION SPECIFICATION: The "SemantiBench" Data Pipeline Figure]
+    % Why: A diagram makes the GPT-4 automated pipeline concrete and reproducible.
+    % ------------------------------------------------------------------------------------------
+    % VISUAL DESIGN:
+    % - Step 1 (Raw Data): Show an icon of a "CT Volume" + "Metadata" (e.g., Label: Kidney Tumor).
+    % - Step 2 (The Agent): An icon representing the "LLM Agent (GPT-4)".
+    % - Step 3 (Stratification): Show the LLM outputting three distinct branches (use bracket notation):
+    %   * Branch L1 (Atomic): "Kidney Tumor"
+    %   * Branch L2 (Descriptive): "Hyperdense mass..."
+    %   * Branch L3 (Complex): "...excluding the cyst."
+    % - Step 4 (Validation): A small "Quality Control" diamond showing the "Verification Model" loop.
+    % ------------------------------------------------------------------------------------------
+    
+    \fbox{\begin{minipage}[c][0.4\textwidth][c]{0.95\textwidth}
+        \centering
+        \ttfamily
+        \Large [PLACEHOLDER: DATA PIPELINE FIGURE]\\
+        \normalsize
+        See comments for detailed visualization specifications
+    \end{minipage}}
 
-\paragraph{Data Source.} 
-We aggregated data from three public repositories: the Medical Segmentation Decathlon (MSD), KiTS23, and BraTS2024. These datasets provide high spatial resolution and diverse target structures (tumors, organs, vessels). We resampled all volumes to a standardized isotropic spacing of $1.0 \times 1.0 \times 1.0$ mm and normalized them to the $[0, 1]$ intensity range using modality-specific windowing (e.g., lung windows for CT, T2-weighted for MRI).
+    \caption{\textbf{SemantiBench Construction Pipeline.} An automated agentic workflow transforms static anatomical labels into hierarchically stratified clinical prompts (L1--L3). A secondary critic agent enforces semantic consistency between the generated prompt and image evidence.}
+    \label{fig:pipeline}
+\end{figure}
 
-\paragraph{Stress-Test Pipeline.}
-We implemented an automated pipeline to generate prompts at three complexity levels ($L_g$). Using a Large Language Model (GPT-4), we transformed static labels into clinical directives:
+Existing benchmarks (MSD, TotalSegmentator) rely on static, "Gold Standard" class labels. This simplistic labeling scheme ($L_1$) fails to capture the linguistic complexity of real-world clinical queries ($L_3$). To bridge this gap, we constructed \textbf{SemantiBench-100K}, a dynamically stratified robustness benchmark.
+
+\paragraph{4.1. The Hierarchical Prompt Pipeline.}
+We standardized data from the MSD and KiTS23 repositories. For each ground-truth mask, we employed a \textbf{Chain-of-Thought (CoT) Agentic Workflow} (utilizing GPT-4) to generate a "Prompt Pyramid" of increasing complexity:
 \begin{itemize}
-    \item \textbf{Level 1 ($L_1$):} Canonical anatomical terms (e.g., "Kidney").
-    \item \textbf{Level 2 ($L_2$):} Direct visual descriptors, including intensity, shape, and texture information.
-    \item \textbf{Level 3 ($L_3$):} Exclusion criteria and complex spatial relationships (e.g., "Heterogeneous mass in the right kidney, excluding the cyst").
+    \item \textbf{$L_1$ (Atomic):} The agent extracts the canonical anatomical noun (e.g., \textit{"Kidney"}).
+    \item \textbf{$L_2$ (Descriptive):} The agent augments the noun with radiomic features visible in the specific modality (e.g., \textit{"The bean-shaped, high-contrast organ in the retroperitoneum"}).
+    \item \textbf{$L_3$ (Complex/Exclusionary):} The agent synthesizes clinical constraints that require negative reasoning (e.g., \textit{"Segment the renal parenchyma while excluding the renal pelvis and hilar vessels"}).
 \end{itemize}
 
-\paragraph{Quality Control.}
-To prevent mismatched prompts, we used a secondary verification step. A separate model checked the generated $L_3$ prompts against the ground truth metadata. Prompts containing contradictions (like describing a fluid-filled cyst as a solid tumor) were regenerated.
+\paragraph{4.2. Visual Grounding Verification (The Critic).}
+A major risk in automated prompt generation is "Semantic Hallucination"---generating a description (e.g., "large cyst") that does not exist in the specific image slice. To mitigate this, we implemented a \textbf{Visual-Language Critic Loop}.
+We utilized a Vision-Language Model (GPT-4V) acting as a discriminator. The Critic receives the image slice and the generated $L_3$ prompt. It outputs a binary \textit{Grounding Score} based on whether the visual evidence supports the textual description. Prompts with low grounding scores are discarded and regenerated. This Adversarial Quality Assurance (AQA) ensures that SemantiBench tests the segmentation model's robustness, not its ability to hallucinate.
 
-\paragraph{Dataset Statistics.}
-The SemantiBench-100K dataset contains 12,000 unique volumes and 108,000 prompt variations across 14 anatomical structures in CT and MRI. The dataset is balanced with a 1:1:1 ratio of $L_1$, $L_2$, and $L_3$ prompts.
+\paragraph{4.3. Evaluation Protocol: Prompt Sensitivity Score.}
+To quantify robustness, we define the \textbf{Prompt Sensitivity Score (PSS)}. For a given model $M$ and dataset $D$, PSS measures the performance degradation relative to the baseline $L_1$ performance:
+\begin{equation}
+    PSS(M) = 1 - \frac{\text{Dice}(M, L_3)}{\text{Dice}(M, L_1)}
+\end{equation}
+A PSS of $0.0$ indicates perfect semantic stability, while a high PSS indicates Semantic Collapse.
 
 \section{Experiments}
 \label{sec:experiments}
 
 \paragraph{Implementation Details.}
-We implemented SemantiSeg in PyTorch and trained it on 4 NVIDIA A100 GPUs. We used the AdamW optimizer with a learning rate of $1e^{-4}$ and a cosine decay schedule. Images were resized to $352 \times 352$ for the DWT module. We applied data augmentation, including elastic deformations and grid distortion, using Albumentations.
+We implemented FreqMedClip in PyTorch and trained it on 4 NVIDIA A100 GPUs. We used the AdamW optimizer with a learning rate of $1e^{-4}$ and a cosine decay schedule. Images were resized to $352 \times 352$. We applied data augmentation, including elastic deformations and grid distortion, using Albumentations.
 
 \paragraph{Baselines.}
 We compared our method against three foundation models:
 (1) \textbf{BiomedParse}~\cite{zhao2024biomedparse}: A joint parsing model using a CLIP-based backbone.
 (2) \textbf{SAM-Med2D}~\cite{cheng2024sammed2d}: An adapter-based finetuned version of the Segment Anything Model.
-(3) \textbf{FMISeg}: A frequency-domain fusion baseline without the semantic gating module, used as an ablation.
+(3) \textbf{FreqMedClip w/o CMSG}: The proposed architecture without the Cross-Modal Semantic Gating module, used to isolate the contribution of linguistic disentanglement.
 
 \paragraph{Results on SemantiBench.}
 Table 1 shows the quantitative results.

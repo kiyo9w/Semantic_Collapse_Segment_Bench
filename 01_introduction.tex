@@ -27,7 +27,7 @@ Existing evaluations typically test on atomic ($L_1$) queries, which are simple 
     %   * Level 3 (Complex): "Necrotic Core"
     % - Action: Arrow pointing from L1 to L3 labeled "Increasing Semantic Complexity".
     %
-    % PANEL C: Your Solution (SemantiSeg)
+    % PANEL C: Your Solution (FreqMedClip)
     % - Input Image: Same CT scan as Panel A.
     % - Prompt: "Necrotic Tumor Core" (highlight "Necrotic" in GREEN).
     % - Your Model Output: Show a mask that ONLY covers the dark center.
@@ -48,8 +48,8 @@ Existing evaluations typically test on atomic ($L_1$) queries, which are simple 
         See comments for detailed visualization architecture (Panels A, B, C)
     \end{minipage}}
 
-    \caption{\textbf{Semantic failure modes.} (A) Existing foundation models (BiomedParse) fail to process the adjective "necrotic," incorrectly segmenting the entire tumor mass~\cite{zhao2024biomedparse}. (B) SemantiBench evaluates robustness across three linguistic levels ($L_1-L_3$). (C) SemantiSeg uses cross-modal gating to isolate the necrotic core.}
+    \caption{\textbf{Semantic failure modes.} (A) Existing foundation models (BiomedParse) fail to process the adjective "necrotic," incorrectly segmenting the entire tumor mass~\cite{zhao2024biomedparse}. (B) SemantiBench evaluates robustness across three linguistic levels ($L_1-L_3$). (C) FreqMedClip uses cross-modal gating to isolate the necrotic core.}
     \label{fig:teaser}
 \end{figure}
 
-This paper makes three contributions. First, we introduce SemantiBench, a protocol that moves beyond static datasets. We built a pipeline using large language models (LLMs) to generate stratified prompts (Atomic $L_1$, Descriptive $L_2$, Complex $L_3$) for standard datasets, allowing us to measure semantic fragility. Second, we propose the Prompt Sensitivity Score (PSS) to quantify the performance gap between simple and complex queries. Our benchmarks show that current models have a PSS up to 0.29, indicating instability. Third, we propose SemantiSeg, an architecture that uses cross-modal semantic gating to filter spatial features based on textual attributes, reducing the PSS to less than 0.05.
+This paper makes three contributions. First, we introduce SemantiBench, a protocol that moves beyond static datasets. We designed a pipeline using large language models (LLMs) to generate stratified prompts (Atomic $L_1$, Descriptive $L_2$, Complex $L_3$) for standard datasets, allowing us to measure semantic fragility. Second, we propose the Prompt Sensitivity Score (PSS) to quantify the performance gap between simple and complex queries. Our benchmarks show that current models have a PSS up to 0.29, indicating instability. Third, we propose FreqMedClip, an architecture that uses cross-modal semantic gating to filter spatial features based on textual attributes, reducing the PSS to less than 0.05.
