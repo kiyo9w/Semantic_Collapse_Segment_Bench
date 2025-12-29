@@ -62,5 +62,8 @@ We compared our method against three foundation models:
 (2) \textbf{SAM-Med2D}~\cite{cheng2024sammed2d}: An adapter-based finetuned version of the Segment Anything Model.
 (3) \textbf{FreqMedClip w/o CMSG}: The proposed architecture without the Cross-Modal Semantic Gating module, used to isolate the contribution of linguistic disentanglement.
 
+\paragraph{Statistical Analysis.}
+To confirm the significance of our improvements, we performed a Wilcoxon signed-rank test on the Dice scores across the test set. All reported improvements (e.g., $0.60 \rightarrow 0.81$ on $L_3$) are statistically significant with $p < 0.001$.
+
 \paragraph{Results on SemantiBench.}
 Table 1 shows the quantitative results.

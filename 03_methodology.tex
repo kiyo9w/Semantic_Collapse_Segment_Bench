@@ -36,39 +36,39 @@
     \label{fig:architecture}
 \end{figure}
 
-We attribute the phenomenon of \textit{Semantic Collapse} to the "Holistic Embedding Bias" in standard Vision-Language models. Architectures like BiomedParse utilize CLIP-style encoders that pool the entire prompt into a single vector ($\mathbf{e}_{text}$). In this compressed latent space, the semantic mass of strong anatomical nouns (e.g., "Tumor") often overshadows subtle adjectival constraints (e.g., "Necrotic"), causing the model to ignore the latter.
+We designed FreqMedCLIP as a dual-stream hybrid architecture to fix the generic "semantic collapse" seen in standard Vision Transformers. The model separates two distinct learning tasks: global semantic alignment (what is the object?) and local boundary delineation (where are the edges?).
 
-To resolve this, we introduce \textbf{FreqMedClip}, an architecture designed to explicitly decouple \textit{Spatial Localization} (Where is the object?) from \textit{Attribute Verification} (What are its properties?).
+As shown in Fig.~\ref{fig:architecture}, the system uses three coupled parts: a semantic stream (BiomedCLIP), a frequency stream (Wavelet-based), and a hyper-fusion decoder that projects semantic constraints into the frequency domain.
 
-\paragraph{3.1. Overview: The Dual-Path Gating Architecture.}
-As illustrated in Fig.~\ref{fig:architecture}, FreqMedClip departs from the standard "Early Fusion" paradigm. Instead of fusing image and text immediately, we maintain two distinct processing streams that intersect only via a novel \textbf{Cross-Modal Semantic Gating (CMSG)} mechanism.
+\paragraph{3.1 Frequency-Domain Visual Encoder}
 
-\paragraph{Stream 1: The Visual Backbone.}
-We employ a \textbf{BiomedCLIP ViT-B/16} encoder to extract multi-scale visual features. Unlike standard fine-tuning, we utilize a \textit{Feature Pyramid Strategy}, extracting features from Transformer Blocks $\{3, 6, 9, 12\}$. Let $\mathbf{F}_{v}^{(i)} \in \mathbb{R}^{H_i \times W_i \times C}$ denote the visual feature map at scale $i$. These maps capture potential regions of interest (ROI) based on shape and boundary cues.
+Unlike standard vision transformers that operate solely in the RGB spatial domain, FreqMedCLIP explicitly decouples high-frequency structural details (boundaries) from low-frequency semantic information (shapes). We implement this via a hard-coded spectral decomposition layer.
 
-\paragraph{Stream 2: The Linguistic Disentanglement Module.}
-This module is the core innovation. Rather than encoding the prompt $T$ as a monolithic vector, we parse $T$ into two distinct components:
-\begin{itemize}
-    \item \textbf{The Nominal Embedding ($\mathbf{e}_{noun}$):} Derived from the anatomical target (e.g., "Tumor", "Lesion"). This guides global localization.
-    \item \textbf{The Attribute Embedding ($\mathbf{e}_{attr}$):} Derived from pathological descriptors (e.g., "Necrotic", "Hypodense", "Spiculated"). This acts as a semantic filter.
-\end{itemize}
-We utilize a lightweight BERT-based dependency parser to extract these tokens, which are then projected into the visual latent space via a learned MLP: $\mathbf{z}_{attr} = \text{MLP}(\mathbf{e}_{attr})$.
-
-\paragraph{3.2. Cross-Modal Semantic Gating (CMSG).}
-The CMSG module enforces semantic robustness by using the attribute embedding to "gate" the visual features. If a visual region does not match the texture/intensity profile implied by $\mathbf{z}_{attr}$ (e.g., a bright region when the prompt implies "dark/necrotic"), the gate suppresses it.
-Mathematically, for a visual feature map $\mathbf{F}_{v}$, we compute a spatial attention map $\mathbf{A}_{gate}$:
+\textbf{Discrete Wavelet Transform (DWT):}
+Given an input image $\mathbf{X}$, we apply a 2D Haar Wavelet Transform to decompose the signal into four spectral sub-bands:
 \begin{equation}
-    \mathbf{A}_{gate} = \sigma \left( \text{Conv}_{1\times1} \left( \mathbf{F}_{v} \odot \mathbf{z}_{attr} \right) \right)
+    \mathbf{X}_{freq} = \text{DWT}(\mathbf{X}) = \{ \mathbf{X}_{LL}, \mathbf{X}_{LH}, \mathbf{X}_{HL}, \mathbf{X}_{HH} \}
 \end{equation}
-where $\odot$ denotes channel-wise multiplication and $\sigma$ is the sigmoid activation. The refined feature map is:
-\begin{equation}
-    \mathbf{F}_{refined} = \mathbf{F}_{v} \cdot (1 + \mathbf{A}_{gate})
-\end{equation}
-This mechanism effectively "turns off" activations in the tumor region that do not correspond to the "necrotic" description, solving the over-segmentation problem.
+where $\mathbf{X}_{LL}$ represents the low-frequency approximation, and $\{\mathbf{X}_{LH}, \mathbf{X}_{HL}, \mathbf{X}_{HH}\}$ capture vertical, horizontal, and diagonal high-frequency edge coefficients, respectively.
 
-\paragraph{3.3. Attribute Consistency Loss.}
-To ensure the model actually learns to use the CMSG module (rather than bypassing it), we introduce an auxiliary \textbf{Attribute Consistency Loss ($\mathcal{L}_{attr}$)}. We maximize the cosine similarity between the pooled visual features of the predicted mask ($\mathbf{v}_{mask}$) and the attribute embedding ($\mathbf{z}_{attr}$):
+\textbf{12-Channel Spectral Input:}
+Instead of downsampling, we concatenate these sub-bands channel-wise to form a spectral volume $\mathbf{V}_{spec} \in \mathbb{R}^{\frac{H}{2} \times \frac{W}{2} \times 12}$ (4 bands $\times$ 3 RGB channels). This tensor is fed into a modified \textbf{ConvNeXt-Tiny} encoder where the input stem has been surgically altered to accept 12 channels ($C_{in}=12$). This forces the network to learn filters that explicitly weight spectral texture information ($HH$ band) against semantic shape information ($LL$ band) from the first layer.
+
+\paragraph{3.2. The Semantic Stream.}
+We use the \textbf{BiomedCLIP ViT-B/16} encoder to extract semantic priors from the standard RGB image. To stop the model from forgetting medical concepts, we freeze most transformer blocks. We only unfreeze layers 3, 6, 9, and 11. This partial fine-tuning strategy produces a deep semantic embedding map $\mathbf{E}_{sem}$.
+
+\paragraph{3.3. Cross-Modal Semantic Gating (CMSG).}
+This module bridges the two streams. It handles the resolution difference between the ViT and the high-res frequency features.
+First, we project the semantic feature map $\mathbf{E}_{sem}$ via a $1 \times 1$ convolution to match the channel dimension of the frequency features, then upsample it bi-linearly.
+Instead of just concatenating them, we use a multiplicative "Hyper-Attention" gating mechanism. The semantic features act as a filter that can suppress frequency activations in regions that don't match the text prompt (like suppressing "rib cage edges" when we want "lung tumor").
 \begin{equation}
-    \mathcal{L}_{total} = \mathcal{L}_{Dice} + \mathcal{L}_{CE} + \lambda \cdot (1 - \text{sim}(\mathbf{v}_{mask}, \mathbf{z}_{attr}))
+    \mathbf{F}_{refined} = \mathbf{F}_{freq} \cdot \sigma(\mathbf{W}_g \cdot (\mathbf{F}_{freq} \odot \mathbf{E}_{sem}))
 \end{equation}
-This explicitly penalizes the model if the segmented region does not visually match the textual description.
+This multiplicative interaction allows the gate to approach zero, effectively "turning off" edges that belong to the wrong object, solving the over-segmentation problem.
+
+\paragraph{3.4. Differentiable Attribute Loss.}
+To avoid the "Bag-of-Words" fallacy where spatial structure is lost, we replace standard Global Average Pooling with **Spatial-Weighted Attribute Pooling (SWAP)**. We use the attention map $\mathbf{A}_{gate}$ from the CMSG module to weight the pooling, ensuring the loss focuses only on the relevant anatomical regions.
+\begin{equation}
+    \mathbf{v}_{pooled} = \frac{\sum_{i,j} \mathbf{F}_{refined}^{(i,j)} \cdot \mathbf{A}_{gate}^{(i,j)}}{\sum_{i,j} \mathbf{A}_{gate}^{(i,j)}}
+\end{equation}
+We force this vector to align with the text embedding $\mathbf{z}_{attr}$ using a Contrastive Loss. Because $\mathbf{v}_{pooled}$ preserves the spatial focus of the gating mechanism, gradients flow smoothly back to update both encoders without relying on discrete masks.
