@@ -1,36 +1,22 @@
-\section{Results}
-\label{sec:results}
+\section{Qualitative Analysis}
+\label{sec:qualitative}
 
-\begin{figure}[t!]
+\begin{figure}[h!]
     \centering
-    \includegraphics[width=0.6\textwidth]{figures/AI_Project_Figure4_L1.drawio_cropped.pdf}
+    \includegraphics[width=0.45\textwidth]{figures/AI_Project_Figure4_L1.drawio_cropped.pdf}
     \\[0.1cm] \textbf{Simple (L1)}
     \vspace{0.2cm}
     
-    \includegraphics[width=0.6\textwidth]{figures/AI_Projects_Figure4_L3.drawio_cropped.pdf}
+    \includegraphics[width=0.45\textwidth]{figures/AI_Projects_Figure4_L3.drawio_cropped.pdf}
     \\[0.1cm] \textbf{Complex (L3)}
 
-    \caption{\textbf{Qualitative Comparison.} Top: L1 results. Bottom: L3 results showing exclusionary constraints.}
-    \label{fig:results_grid}
+    \caption{\textbf{Qualitative Comparison.} The visual results confirm the quantitative metrics. In the L3 example (bottom), BiomedParse fails to exclude the region, whereas FreqMedClip respects the constraint.}
+    \label{fig:qualitative_results}
 \end{figure}
 
-Table \ref{tab:results} reveals the fragility of existing models.
+The qualitative examples in Fig.~\ref{fig:qualitative_results} illustrate the impact of the DPLG module. Note how the baseline model's mask ``spills'' over into the excluded region because it recognizes the texture of the organ but misses the semantic stop-signal.
 
-\begin{table}[h]
-\centering
-\caption{Performance Comparison on SemantiBench.}
-\label{tab:results}
-\begin{tabular}{l|cc|c}
-\toprule
-\textbf{Model} & \textbf{L1 Dice (Simple)} & \textbf{L3 Dice (Complex)} & \textbf{PSS (Sensitivity)} \\
-\midrule
-BiomedParse & 0.85 & 0.60 & 0.29 \\
-SAM-Med2D   & 0.82 & 0.55 & 0.33 \\
-\textbf{FreqMedClip (Ours)} & \textbf{0.86} & \textbf{0.81} & \textbf{0.05} \\
-\bottomrule
-\end{tabular}
-\end{table}
 
-\textbf{Analysis:} BiomedParse suffers a \textbf{29\% Semantic Collapse}. While it recognizes the object, it fails to adhere to the fine-grained exclusion criteria in L3 prompts. Our CMSG mechanism effectively acts as a semantic filter, maintaining a stable performance (PSS = 0.05).
+In the ``Necrotic Core'' task, BiomedParse segments the \textit{entire} tumor, failing to distinguish the core. This confirms it treats the prompt as a generic class label (``Tumor''). FreqMedClip, guided by the Dual-Path Logic Gating, correctly suppresses the enhancing rim and segments only the necrotic center.
 
-In the "Necrotic Core" task, BiomedParse segments the \textit{entire} tumor, failing to distinguish the core. This confirms it treats the prompt as a generic class label ("Tumor"). FreqMedClip, guided by the Semantic Gating, correctly suppresses the enhancing rim and segments only the necrotic center.
+\FloatBarrier

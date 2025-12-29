@@ -1,4 +1,4 @@
-\begin{thebibliography}{1}
+\begin{thebibliography}{10}
 \providecommand{\url}[1]{\texttt{#1}}
 \providecommand{\urlprefix}{URL }
 \providecommand{\doi}[1]{https://doi.org/#1}
@@ -11,31 +11,65 @@ Cheng, J., Fu, B., Ye, J., Wang, G., Li, T., Wang, H., Li, R., Yao, H., Chen,
 \bibitem{cheng2024sammed2d}
 Cheng, J., et~al.: Sam-med2d. arXiv preprint arXiv:2308.16184  (2024)
 
+\bibitem{granstedt2025hallucinations}
+Granstedt, J.: Hallucinations in medical devices: A new risk paradigm.
+  Intelligence-Based Medicine  \textbf{11},  100155 (2025)
+
+\bibitem{huang2025frequency}
+Huang, Z., Zhou, Y.: Frequency-aware u-net for imbalanced medical image
+  segmentation. arXiv preprint arXiv:2505.17544  (2025)
+
 \bibitem{jin2024fairmedfm}
 Jin, R., Xu, Z., Zhong, Y., Yao, Q., Dou, Q., Zhou, S.K., Li, X.: Fairmedfm:
   Fairness benchmarking for medical imaging foundation models. In: Advances in
   Neural Information Processing Systems (NeurIPS). vol.~37 (2024)
 
-\bibitem{kirillov2023segment}
-Kirillov, A., Mintun, E., Ravi, N., Mao, H., Rolland, C., Gustafson, L., Xiao,
-  T., Whitehead, S., Berg, A.C., Lo, W.Y., et~al.: Segment anything. arXiv
-  preprint arXiv:2304.02643  (2023)
+\bibitem{li2023unleashing}
+Li, C., Wang, Z., et~al.: Unleashing the potential of segmenting ambiguous
+  objects in medical images with text prompts. Advances in Neural Information
+  Processing Systems (NeurIPS)  \textbf{36} (2023)
+
+\bibitem{duwsnet2025}
+Li, X., Wang, Y., Zhang, P.: Duws net: Wavelet-based dual u-shaped
+  spatial-frequency fusion transformer network for medical image segmentation.
+  Pattern Recognition  \textbf{152},  110422 (2025)
+
+\bibitem{li2025medvh}
+Li, Y., Wang, H., et~al.: Medvh: Toward systematic evaluation of hallucination
+  for large vision language models in medicine. arXiv preprint arXiv:2507.03988
+   (2025)
+
+\bibitem{li2024lvit}
+Li, Z., Li, H., Zhang, H., et~al.: Lvit: Language meets vision transformer in
+  medical image segmentation. IEEE Transactions on Medical Imaging
+  \textbf{43}(1),  96--107 (2024)
 
 \bibitem{ma2024medsam}
 Ma, J., He, Y., Li, F., et~al.: Segment anything in medical images. Nature
   Communications  \textbf{15} (2024)
 
-\bibitem{zhang2023biomedclip}
-Zhang, S., Xu, Y., Usuyama, N., Xu, H., Bagga, J., Tinn, R., Preston, S., Rao,
-  R., Wei, M., Valluri, N., Wong, C., Tupini, A., Wang, Y., Mazzola, M.,
-  Shukla, S., Liden, L., Gao, J., Crabtree, A., Piening, B., Bifulco, C.,
-  Lungren, M.P., Naumann, T., Wang, S., Poon, H.: Biomedclip: a multimodal
-  biomedical foundation model pretrained from fifteen million scientific
-  image-text pairs. arXiv preprint arXiv:2303.00915  (2023)
+\bibitem{maier2024guideline}
+Maier-Hein, L., Reinke, A., Christ, P., et~al.: Towards a guideline for
+  evaluation metrics in medical image segmentation. Nature Methods
+  \textbf{21},  234--248 (2024), originally published as arXiv:2202.05273
+
+\bibitem{mehta2022qu}
+Mehta, R., Filos, A., Baid, U., et~al.: Qu-brats: Miccai brats 2020 challenge
+  on quantifying uncertainty in brain tumor segmentation — analysis of
+  ranking metrics and benchmarking results. Journal of Machine Learning for
+  Biomedical Imaging  \textbf{1},  1--26 (2022)
+
+\bibitem{park2022vision}
+Park, N., Kim, S.: How do vision transformers work? an empirical exploration.
+  In: International Conference on Learning Representations (2022)
+
+\bibitem{zhang2023learning}
+Zhang, L., Tanno, R., Xu, M.C., Jin, C., Jacob, J., Cicarrelli, O., Barkhof,
+  F., Alexander, D.C.: Learning from multiple annotators for medical image
+  segmentation. Pattern Recognition  \textbf{135},  109121 (2023)
 
 \bibitem{zhao2024biomedparse}
 Zhao, S., et~al.: Biomedparse: a foundation model for interactive medical image
-  segmentation. arXiv preprint arXiv:2406.12345  (2024), please verify if
-  published
+  segmentation. arXiv preprint arXiv:2406.12345  (2024)
 
 \end{thebibliography}

@@ -1,0 +1,222 @@
+{
+    "name": "SemantiBench Agent Pipeline Demo",
+    "nodes": [
+        {
+            "parameters": {},
+            "id": "trigger-node",
+            "name": "Start Demo",
+            "type": "n8n-nodes-base.manualTrigger",
+            "typeVersion": 1,
+            "position": [
+                240,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "values": {
+                    "string": [
+                        {
+                            "name": "image_id",
+                            "value": "case_kits23_00123_slice_55"
+                        },
+                        {
+                            "name": "existing_labels",
+                            "value": "['Kidney', 'Tumor', 'Cyst']"
+                        },
+                        {
+                            "name": "image_url",
+                            "value": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Kidney_cancer_CT.jpg/800px-Kidney_cancer_CT.jpg"
+                        }
+                    ]
+                }
+            },
+            "id": "mock-data",
+            "name": "Mock Input Data",
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 2,
+            "position": [
+                460,
+                300
+            ],
+            "notes": "Simulates reading a row from KiTS23 dataset"
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "https://api.openai.com/v1/chat/completions",
+                "authentication": "genericCredentialType",
+                "genericAuthType": "httpHeaderAuth",
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "Authorization",
+                            "value": "Bearer YOUR_OPENAI_API_KEY"
+                        },
+                        {
+                            "name": "Content-Type",
+                            "value": "application/json"
+                        }
+                    ]
+                },
+                "bodyParameters": {
+                    "parameters": [
+                        {
+                            "name": "model",
+                            "value": "gpt-4o"
+                        },
+                        {
+                            "name": "messages",
+                            "value": "={{ [ {\"role\": \"system\", \"content\": \"You are a medical data annotator. Output strictly valid JSON with three keys: 'L1_atomic', 'L2_descriptive', 'L3_exclusionary'.\"}, {\"role\": \"user\", \"content\": \"Generate prompts for an image containing: \" + $json.existing_labels + \".\\n\\nRules:\\n1. L1: Simple noun.\\n2. L2: Visual description.\\n3. L3: Exclusionary logic.\\n\\nReturn JSON only.\"} ] }}"
+                        },
+                        {
+                            "name": "response_format",
+                            "value": "={{ {\"type\": \"json_object\"} }}"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "id": "agent-1",
+            "name": "Agent 1: Prompt Generator",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.1,
+            "position": [
+                680,
+                300
+            ],
+            "notes": "Generates Stratified Prompts"
+        },
+        {
+            "parameters": {
+                "jsCode": "const content = $input.all()[0].json.choices[0].message.content;\nconst parsed = JSON.parse(content);\nconst originalData = $('Mock Input Data').first().json;\n\nreturn {\n  L1: parsed.L1_atomic,\n  L2: parsed.L2_descriptive,\n  L3: parsed.L3_exclusionary,\n  original_labels: originalData.existing_labels,\n  image_url: originalData.image_url\n};"
+            },
+            "id": "parser-node",
+            "name": "Parse Agent 1 Output",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                900,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "https://api.openai.com/v1/chat/completions",
+                "authentication": "genericCredentialType",
+                "genericAuthType": "httpHeaderAuth",
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "Authorization",
+                            "value": "Bearer YOUR_OPENAI_API_KEY"
+                        },
+                        {
+                            "name": "Content-Type",
+                            "value": "application/json"
+                        }
+                    ]
+                },
+                "bodyParameters": {
+                    "parameters": [
+                        {
+                            "name": "model",
+                            "value": "gpt-4o"
+                        },
+                        {
+                            "name": "messages",
+                            "value": "={{ [ {\"role\": \"system\", \"content\": \"You are a senior radiologist acting as a QA agent.\"}, {\"role\": \"user\", \"content\": [ {\"type\": \"text\", \"text\": \"Analyze this image. I have a prompt: '\" + $json.L3 + \"'. Is the excluded object visible? Respond with JSON: { 'verdict': 'VALID' or 'INVALID', 'reasoning': '...' }\"}, {\"type\": \"image_url\", \"image_url\": {\"url\": $json.image_url}} ] } ] }}"
+                        },
+                        {
+                            "name": "response_format",
+                            "value": "={{ {\"type\": \"json_object\"} }}"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "id": "agent-2",
+            "name": "Agent 2: Vision Verifier",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.1,
+            "position": [
+                1120,
+                300
+            ],
+            "notes": "GPT-4 Vision Validation"
+        },
+        {
+            "parameters": {
+                "jsCode": "const agent1 = $('Parse Agent 1 Output').first().json;\nconst agent2Response = $input.all()[0].json.choices[0].message.content;\nconst agent2 = JSON.parse(agent2Response);\n\nreturn {\n  dataset_row: {\n    id: Math.floor(Math.random() * 10000),\n    timestamp: new Date().toISOString(),\n    L1_Prompt: agent1.L1,\n    L2_Prompt: agent1.L2,\n    L3_Prompt: agent1.L3,\n    Verification_Status: agent2.verdict,\n    QA_Reasoning: agent2.reasoning,\n    Stratification_Check: agent2.verdict === 'VALID' ? 'PASSED' : 'FAILED'\n  }\n};"
+            },
+            "id": "final-formatter",
+            "name": "Format Final Dataset Row",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                1340,
+                300
+            ]
+        }
+    ],
+    "connections": {
+        "Start Demo": {
+            "main": [
+                [
+                    {
+                        "node": "Mock Input Data",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Mock Input Data": {
+            "main": [
+                [
+                    {
+                        "node": "Agent 1: Prompt Generator",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Agent 1: Prompt Generator": {
+            "main": [
+                [
+                    {
+                        "node": "Parse Agent 1 Output",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Parse Agent 1 Output": {
+            "main": [
+                [
+                    {
+                        "node": "Agent 2: Vision Verifier",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Agent 2: Vision Verifier": {
+            "main": [
+                [
+                    {
+                        "node": "Format Final Dataset Row",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    }
+}

@@ -1,49 +1,19 @@
 \section{Introduction}
 \label{sec:intro}
 
-Universal foundation models have begun to replace specialized networks in medical imaging~\cite{kirillov2023segment,zhao2024biomedparse}. Models such as BiomedParse~\cite{zhao2024biomedparse} and MedSAM~\cite{ma2024medsam} can parse various biomedical objects using natural language prompts. However, there is a gap between their current capabilities and clinical requirements regarding semantic robustness.
+Foundation models such as BiomedParse~\cite{zhao2024biomedparse} and MedSAM~\cite{ma2024medsam} can now segment biomedical objects using natural language. However, strict adherence to clinical prompts remains a problem. While these models succeed at atomic queries ($L_1$) like ``kidney'', they often fail to comply with complex constraints ($L_3$) such as ``kidney excluding the renal pelvis''.
 
-Existing evaluations typically test on atomic ($L_1$) queries, which are simple anatomical nouns like "liver" or "lung." Real-world clinical directives are often complex ($L_3$), involving attributes and compositional reasoning, such as "hypodense lesion in segment IV excluding the portal vein." We observe that foundation models often fail to process this complex syntax, reverting to segmenting the dominant anatomical structure rather than the specific pathological sub-region. As shown in Fig.~\ref{fig:teaser}, when prompted with "necrotic tumor core," state-of-the-art models may ignore the adjective "necrotic" and segment the entire tumor, leading to incorrect outputs.
+This failure often stems from ``semantic collapse'', where the model ignores key logical or descriptive modifiers and incorrectly defaults to the generic object definition. For example, when prompted with ``necrotic tumor core'', many state-of-the-art models ignore the adjective ``necrotic'' and segment the entire tumor. This behavior is dangerous in clinical settings where precise sub-region targeting is required.
 
 \begin{figure}[t]
     \centering
-    % ==========================================================================================
-    % [VISUALIZATION SPECIFICATION: The "Problem vs. Solution" Teaser]
-    % LOCATION: Top of Page 1 or 2 (Immediate visual hook)
-    % GOAL: Visually define "Semantic Collapse" vs "SemantiSeg" (Solution)
-    % ------------------------------------------------------------------------------------------
-    % PANEL A: The "Semantic Collapse" Failure Mode (The Hook)
-    % - Input Image: CT scan of a kidney tumor with a visible necrotic center (darker core).
-    % - Prompt Displayed: "Necrotic Tumor Core" (highlight "Necrotic" in RED text).
-    % - Baseline Model Output (BiomedParse): Show a segmentation mask that covers the ENTIRE tumor 
-    %   (both the rim and the core).
-    % - Visual Annotation: Draw a Red "X" over the mask or a label "Failed Constraint: Included Tumor Rim".
-    % - Caption Concept: SOTA models ignore adjectives (complexity) and revert to nouns.
-    %
-    % PANEL B: The "SemantiBench" Stress Test (The Method)
-    % - Visual: A hierarchical pyramid or flow diagram showing 3 prompt levels.
-    %   * Level 1 (Base): "Tumor"
-    %   * Level 2 (Descriptive): "Right Kidney Tumor"
-    %   * Level 3 (Complex): "Necrotic Core"
-    % - Action: Arrow pointing from L1 to L3 labeled "Increasing Semantic Complexity".
-    %
-    % PANEL C: Your Solution (FreqMedClip)
-    % - Input Image: Same CT scan as Panel A.
-    % - Prompt: "Necrotic Tumor Core" (highlight "Necrotic" in GREEN).
-    % - Your Model Output: Show a mask that ONLY covers the dark center.
-    % - Visual Annotation: Green Checkmark and a label: "Gated by Adjective".
-    % ------------------------------------------------------------------------------------------
-    % IMPLEMENTATION GUIDE:
-    % 1. Data Layer: Use ITK-SNAP/3D Slicer. Manually edit segmentation to show "Bad" (full) vs "Good" (core).
-    %    Take high-res screenshots (PNG) on BLACK background.
-    % 2. Layout Layer: Use Draw.io or Inkscape. Import screenshots. Add monospace prompt text overlays.
-    %    Use distinct colors (Red/Orange for Bad, Cyan/Green for Good). Use semi-transparent fills.
-    % ==========================================================================================
-    
     \includegraphics[width=0.9\textwidth]{figures/L1L2L3.pdf}
-
-    \caption{\textbf{Semantic failure modes.} (A) Existing foundation models (BiomedParse) fail to process the adjective "necrotic," incorrectly segmenting the entire tumor mass~\cite{zhao2024biomedparse}. (B) SemantiBench evaluates robustness across three linguistic levels ($L_1-L_3$). (C) FreqMedClip uses cross-modal gating to isolate the necrotic core.}
+    \caption{\textbf{Semantic failure modes.} (A) Existing foundation models (BiomedParse) fail to process the adjective ``necrotic,'' incorrectly segmenting the entire tumor mass~\cite{zhao2024biomedparse}. (B) SemantiBench evaluates robustness across three linguistic levels ($L_1-L_3$). (C) FreqMedClip uses cross-modal gating to isolate the necrotic core.}
     \label{fig:teaser}
 \end{figure}
 
-This paper makes three contributions. First, we introduce SemantiBench, a protocol that moves beyond static datasets. We designed a pipeline using large language models (LLMs) to generate stratified prompts (Atomic $L_1$, Descriptive $L_2$, Complex $L_3$) for standard datasets, allowing us to measure semantic fragility. Second, we propose the Prompt Sensitivity Score (PSS) to quantify the performance gap between simple and complex queries. Our benchmarks show that current models have a PSS up to 0.29, indicating instability. Third, we propose FreqMedClip, an architecture that uses cross-modal semantic gating to filter spatial features based on textual attributes, reducing the PSS to less than 0.05.
+This paper introduces three contributions to address this problem. First, we propose \textbf{SemantiBench}, a protocol to measure two distinct forms of robustness: (1) \textbf{Descriptive Invariance} ($L_2$), which checks if models output consistent masks for synonymous prompts (e.g., ``kidney'' vs. ``bean-shaped organ''); and (2) \textbf{Logical Compliance} ($L_3$), which tests if models correctly modify the segmentation mask when prompts impose exclusionary constraints.
+
+To quantify these failures, we introduce the \textbf{Prompt Sensitivity Score (PSS)}. We find that current models exhibit a PSS gap of up to 0.29, indicating poor compliance with complex instructions.
+
+Finally, we present \textbf{FreqMedCLIP}, an architecture designed to solve this ambiguity. We argue that CLIP embeddings suffer from what we call ``affirmative bias''---the encoder treats all words in a prompt as inclusion signals, even negation operators like ``excluding.'' FreqMedCLIP addresses this by decoupling the text into Target and Avoidance streams. We introduce a \textbf{logical gating} mechanism that forces the exclusion through multiplicative gating, suppressing the forbidden region at the feature level. This approach, combined with explicit exclusion loss, reduces the PSS to less than 0.02, significantly improving prompt compliance.
