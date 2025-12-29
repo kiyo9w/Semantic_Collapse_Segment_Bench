@@ -1,7 +1,7 @@
 \section{Construction of SemantiBench}
 \label{sec:benchmark}
 
-\begin{figure}[t]
+\begin{figure*}[t!]
     \centering
     % ==========================================================================================
     % [VISUALIZATION SPECIFICATION: The "SemantiBench" Data Pipeline Figure]
@@ -17,17 +17,11 @@
     % - Step 4 (Validation): A small "Quality Control" diamond showing the "Verification Model" loop.
     % ------------------------------------------------------------------------------------------
     
-    \fbox{\begin{minipage}[c][0.4\textwidth][c]{0.95\textwidth}
-        \centering
-        \ttfamily
-        \Large [PLACEHOLDER: DATA PIPELINE FIGURE]\\
-        \normalsize
-        See comments for detailed visualization specifications
-    \end{minipage}}
+    \makebox[\textwidth][c]{\includegraphics[width=1.1\textwidth]{figures/AI_Project_Figure_3.drawio_cropped.pdf}}
 
-    \caption{\textbf{SemantiBench Construction Pipeline.} An automated agentic workflow transforms static anatomical labels into hierarchically stratified clinical prompts (L1--L3). A secondary critic agent enforces semantic consistency between the generated prompt and image evidence.}
+    \caption{\textbf{SemantiBench Construction Pipeline.} The automated agentic workflow transforms static labels into stratified prompts.}
     \label{fig:pipeline}
-\end{figure}
+\end{figure*}
 
 Existing benchmarks (MSD, TotalSegmentator) rely on static, "Gold Standard" class labels. This simplistic labeling scheme ($L_1$) fails to capture the linguistic complexity of real-world clinical queries ($L_3$). To bridge this gap, we constructed \textbf{SemantiBench-100K}, a dynamically stratified robustness benchmark.
 

@@ -24,13 +24,7 @@
     % - Right Side (Output): The fused features flowing into a segmentation head to produce final mask.
     % ------------------------------------------------------------------------------------------
     
-    \fbox{\begin{minipage}[c][0.4\textwidth][c]{0.95\textwidth}
-        \centering
-        \ttfamily
-        \Large [PLACEHOLDER: SYSTEM ARCHITECTURE FIGURE]\\
-        \normalsize
-        See comments for detailed visualization specifications
-    \end{minipage}}
+    \makebox[\textwidth][c]{\includegraphics[width=1.1\textwidth]{"figures/Freqmedclip Architecture.pdf"}}
 
     \caption{\textbf{FreqMedClip Architecture.} The model features two streams: (1) A visual backbone (BiomedCLIP) with a feature pyramid to extract multi-scale spatial features, and (2) A linguistic disentanglement module that parses prompts into Nominal and Attribute embeddings. The Cross-Modal Semantic Gating (CMSG) mechanism dynamically filters these visual features based on attribute constraints.}
     \label{fig:architecture}

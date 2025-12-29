@@ -1,31 +1,16 @@
 \section{Results}
 \label{sec:results}
 
-\begin{figure}[t]
+\begin{figure}[t!]
     \centering
-    % ==========================================================================================
-    % [VISUALIZATION SPECIFICATION: The Qualitative "Success vs. Failure" Grid]
-    % Why: Visually prove that numbers (0.86 vs 0.60 Dice) translate to real clinical quality.
-    % ------------------------------------------------------------------------------------------
-    % VISUAL DESIGN:
-    % - Rows: 3 distinct examples (Row 1: Necrotic Core, Row 2: Renal Cortex, Row 3: Complex Exclusion).
-    % - Columns:
-    %   1. Input Image + Prompt (e.g., Text: "Necrotic Tumor Core").
-    %   2. Ground Truth (Green outline).
-    %   3. BiomedParse (SOTA) (Red outline - Show Failure Mode where it selects whole tumor).
-    %   4. FreqMedClip (Ours) (Blue outline - Show Success where it selects only the core).
-    % - Annotation: Add small yellow arrows in the "BiomedParse" column pointing to the error.
-    % ------------------------------------------------------------------------------------------
+    \includegraphics[width=0.6\textwidth]{figures/AI_Project_Figure4_L1.drawio_cropped.pdf}
+    \\[0.1cm] \textbf{Simple (L1)}
+    \vspace{0.2cm}
     
-    \fbox{\begin{minipage}[c][0.6\textwidth][c]{0.95\textwidth}
-        \centering
-        \ttfamily
-        \Large [PLACEHOLDER: RESULTS GRID FIGURE]\\
-        \normalsize
-        See comments for detailed visualization specifications
-    \end{minipage}}
+    \includegraphics[width=0.6\textwidth]{figures/AI_Projects_Figure4_L3.drawio_cropped.pdf}
+    \\[0.1cm] \textbf{Complex (L3)}
 
-    \caption{\textbf{Qualitative Comparison.} Visual results on complex (L3) queries. BiomedParse (Red) typically fails to respect negative constraints (e.g., "excluding necrosis"), reverting to coarse object segmentation. FreqMedClip (Blue) successfully gates the feature maps to isolate the specific pathological sub-regions.}
+    \caption{\textbf{Qualitative Comparison.} Top: L1 results. Bottom: L3 results showing exclusionary constraints.}
     \label{fig:results_grid}
 \end{figure}
 
