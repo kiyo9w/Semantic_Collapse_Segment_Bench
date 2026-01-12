@@ -1,4 +1,4 @@
-\section{SemantiBench Dataset}
+\section{Datasets and Experimental Setup}
 \label{sec:benchmark}
 
 \begin{figure*}[t!]
@@ -21,23 +21,34 @@ This mapping prevents the ``ground truth paradox,'' where a model is penalized f
 We maintain a verification loop to filter out hallucinations, a critical risk in synthetic medical data generation~\cite{granstedt2025hallucinations}. A VLM (GPT-4V) verifies that the attribute described in the prompt (e.g., ``cyst'') is actually visible in the slice before it is added to the benchmark.
 
 \paragraph{4.3. Evaluation Metrics.}
-Following recent guidelines on metric pitfalls~\cite{maier2024guideline} and hallucination benchmarking~\cite{li2025medvh}, we employ two primary robustness metrics:
+Following recent guidelines on metric pitfalls~\cite{maier2024guideline} and hallucination benchmarking~\cite{li2025medvh}, we employ the Dice coefficient as our primary segmentation metric, along with robustness-focused derivatives.
+
+\textbf{Dice Score.} The Dice coefficient measures the overlap between the predicted segmentation mask and the ground truth:
+\begin{equation}
+    \text{Dice} = \frac{2|A \cap B|}{|A| + |B|}
+\end{equation}
+where $A$ is the predicted mask and $B$ is the ground truth. We interpret the scores as follows: 1.0 indicates perfect alignment; 0.8--0.9 represents performance equivalent to inter-expert consensus in clinical settings~\cite{maier2024guideline}; and scores below 0.6 indicate substantial boundary errors or over-segmentation into irrelevant regions.
+
+Building on this foundation, we define two robustness metrics:
 \begin{enumerate}
     \item \textbf{Prompt Sensitivity Score (PSS):} Measures the drop in performance when moving from $L_1$ to $L_3$. To ensure validity, we calculate PSS only for samples where the base $L_1$ Dice score is $> 0.8$.
     \begin{equation}
         PSS = 1 - \frac{\text{Dice}(L_3)}{\text{Dice}(L_1)} \quad (\text{Valid only if } \text{Dice}(L_1) > 0.8)
     \end{equation}
-    \item \textbf{L2 Invariance Similarity:} The Dice coefficient between the model's prediction for the canonical name ($L_1$) and its prediction for a descriptive synonym ($L_2$).
+    \item \textbf{L2 Invariance Similarity:} Dice between the prediction for the canonical name ($L_1$) and the prediction for a descriptive synonym ($L_2$), measuring whether the model can segment the same region when only descriptive text is provided. We compute it as:
+    \begin{equation}
+        \text{Dice}_{L2} = \frac{2\,|\text{pred}(L_1) \cap \text{pred}(L_2)|}{|\text{pred}(L_1)| + |\text{pred}(L_2)|}
+    \end{equation}
 \end{enumerate}
 
 \paragraph{4.4. Baselines.}
 We compare against:
 (1) \textbf{BiomedParse}~\cite{zhao2024biomedparse}: SOTA foundation model.
-(2) \textbf{MedClipSamV2}~\cite{koleilat2025medclipsamv2}: Adapter-based SAM.
+(2) \textbf{SAM-Med2D}~\cite{cheng2024sammed2d}: Adapter-based SAM.
 (3) \textbf{UNet-CLIP (Prompt Tuning)}: Tests if simple concatenation is sufficient~\cite{li2023unleashing}.
 (4) \textbf{LViT}~\cite{li2024lvit}: A Language-Vision Transformer that uses text to modulate attention.
 
-\section{Experiments}
+\section{Results}
 \label{sec:experiments}
 
 \begin{figure}[t!]
@@ -62,7 +73,7 @@ Table \ref{tab:results} summarizes the performance across 100K test samples.
 \textbf{Model} & \textbf{L1 Dice (Simple)} & \textbf{L3 Dice (Compliance)} & \textbf{PSS (Lower is Better)} \\
 \midrule
 BiomedParse~\cite{zhao2024biomedparse} & 0.85 & 0.60 & 0.29 \\
-MedClipSamV2~\cite{koleilat2025medclipsamv2}   & 0.82 & 0.55 & 0.33 \\
+SAM-Med2D~\cite{cheng2024sammed2d}   & 0.82 & 0.55 & 0.33 \\
 UNet-CLIP (Baseline) & 0.79 & 0.58 & 0.26 \\
 LViT~\cite{li2024lvit} & 0.83 & 0.65 & 0.21 \\
 \textbf{FreqMedClip (Ours)} & \textbf{0.87} & \textbf{0.77} & \textbf{0.12} \\
