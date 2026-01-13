@@ -3,39 +3,61 @@
 
 \begin{figure}[t]
     \centering
-    \makebox[\textwidth][c]{\includegraphics[width=1.1\textwidth]{"figures/Freqmedclip Architecture.pdf"}} % Keep original figure
-    \caption{\textbf{FreqMedClip Architecture.} The model features two streams: (1) A visual backbone (BiomedCLIP) to extract global semantic context, and (2) A High-Frequency Encoder (Wavelet-based) to capture texture and boundary details associated with specific attributes (e.g., ``necrotic,'' ``spiculated''). The Cross-Modal Semantic Gating (CMSG) mechanism uses the text prompt to actively filter the high-frequency stream, isolating only the relevant sub-structures.}
+    \makebox[\textwidth][c]{\includegraphics[width=1.1\textwidth]{"figures/Freqmedclip Architecture.pdf"}} 
+    \caption{\textbf{FreqMedClip Architecture.} The model uses two distinct streams: (1) A visual backbone (BiomedCLIP) that extracts global context, and (2) A High-Frequency Encoder that captures the fine texture and boundary details associated with specific attributes (e.g., necrotic, spiculated). The Cross-Modal Semantic Gating (CMSG) mechanism actively filters this high-frequency stream using the text prompt, isolating only the structures that match the logical query.}
     \label{fig:architecture}
 \end{figure}
 
-We designed FreqMedCLIP to solve the ``Frequency-Semantic Gap.'' We hypothesize that semantic attributes (like ``necrotic'' or ``nodular'') are often encoded in high-frequency signals that standard Vision Transformers smooth out. Therefore, our model treats the high-frequency stream not just as a boundary detector, but as the raw material for semantic reasoning.
+We designed FreqMedCLIP to bridge the Frequency-Semantic Gap in medical segmentation. We assume that critical semantic attributes, like whether a tumor is necrotic or nodular, are encoded in high-frequency signals that standard Vision Transformers (ViTs) tend to smooth out. Consequently, our model treats the high-frequency stream not just as a simple edge detector, but as a rich source of raw material for semantic reasoning.
 
-\paragraph{3.1. High-Frequency Attribute Encoder.}
-Standard ViTs suffer from a ``low-pass'' bias, making them blind to texture-defined semantics~\cite{park2022vision}. Recent work has shown that explicit frequency modeling significantly boosts segmentation of subtle structures~\cite{duwsnet2025,huang2025frequency}. We address this by explicitly encoding the high-frequency spectrum. We use a \textbf{Discrete Wavelet Transform (DWT)} to decompose the input $\mathbf{X}$ into four spectral sub-bands:
+\paragraph{FreqMedClip: Frequency-Aware Logic.}
+
+\paragraph{High-Frequency Attribute Encoder.}
+Standard ViTs suffer from a key limitation: they act as low-pass filters, effectively blinding them to texture-defined semantics~\cite{park2022vision}. While recent methods have tried to add frequency modeling~\cite{duwsnet2025,huang2025frequency}, they often treat it as a secondary auxiliary task. We take a different approach by explicitly encoding the high-frequency spectrum as a primary input.
+
+We use a \textbf{Discrete Wavelet Transform (DWT)} to decompose the input image $\mathbf{X}$ into four spectral sub-bands:
 \begin{equation}
     \mathbf{X}_{freq} = \text{DWT}(\mathbf{X}) = \{ \mathbf{X}_{LL}, \mathbf{X}_{LH}, \mathbf{X}_{HL}, \mathbf{X}_{HH} \}
 \end{equation}
-Here, $\{ \mathbf{X}_{LH}, \mathbf{X}_{HL}, \mathbf{X}_{HH} \}$ capture the vertical, horizontal, and diagonal high-frequency details—precisely where features like tissue texture (necrotic vs. vital) and margin type (spiculated vs. smooth) reside. These 12 spectral channels feed a \textbf{ConvNeXt-Tiny} encoder, which provides the ``semantic raw material'' that the text gate will later act upon.
+The components $\{ \mathbf{X}_{LH}, \mathbf{X}_{HL}, \mathbf{X}_{HH} \}$ capture vertical, horizontal, and diagonal details respectively. These are precisely where features like tissue texture (e.g., necrotic vs. vital) and margin type (e.g., spiculated vs. smooth) reside. We feed these 12 spectral channels into a \textbf{ConvNeXt-Tiny} encoder. This encoder does not just extract edges. It produces the semantic raw material that our text gate will later act upon.
 
-\paragraph{3.2. Dual-Stream Encoder.}
-We use the \textbf{BiomedCLIP ViT-B/16} to extract the global semantic context. To handle compositional queries (e.g., ``Kidney excluding tumor''), we use a semantic decomposition strategy. The input prompt is split into $P_{pos}$ (``Kidney'') and $P_{neg}$ (``Tumor''). These are encoded into two distinct embedding vectors, $\mathbf{E}_{pos}$ and $\mathbf{E}_{neg}$, ensuring that the avoidance signal remains independent from the target representation.
+\paragraph{Dual-Stream Encoder.}
+For global context, we use the \textbf{BiomedCLIP ViT-B/16}. To handle complex, compositional queries like "Kidney excluding tumor", we use a semantic decomposition strategy. We split the input prompt into two parts: $P_{pos}$ (the target, e.g., "Kidney") and $P_{neg}$ (the avoidance target, e.g., "Tumor"). We encode these into two distinct embedding vectors, $\mathbf{E}_{pos}$ and $\mathbf{E}_{neg}$. This distinction is critical because it ensures the avoidance signal remains independent from the target representation, preventing the model from confusing what it should finding with what it should ignore.
 
-\paragraph{3.3. Logical Gating.}
-We propose a \textbf{Logical Gate}. Unlike standard cross-attention which mixes signals, this gate operates on strict exclusion logic. The high-frequency feature map $\mathbf{F}_{freq}$ is processed by two parallel paths:
-
+\paragraph{Logical Gating (CMSG).}
+We propose a \textbf{Cross-Modal Semantic Gating (CMSG)} mechanism. Unlike standard cross-attention, which simply mixes signals based on similarity, our gate operates on strict exclusion logic. The high-frequency feature map $\mathbf{F}_{freq}$ passes through two parallel paths:
 \begin{itemize}
-    \item \textbf{Inclusion Path ($\mathbf{G}_{inc}$):} Activates regions matching $\mathbf{E}_{pos}$.
-    \item \textbf{Exclusion Path ($\mathbf{G}_{exc}$):} Activates regions matching $\mathbf{E}_{neg}$.
+    \item \textbf{Inclusion Path ($\mathbf{G}_{inc}$):} This path highlights regions that match $\mathbf{E}_{pos}$.
+    \item \textbf{Exclusion Path ($\mathbf{G}_{exc}$):} This path detects regions that match $\mathbf{E}_{neg}$.
 \end{itemize}
 
-The final feature refinement enforces the logical constraint: include regions matching $P_{pos}$ while suppressing regions matching $P_{neg}$:
+The final refinement step enforces our logical constraint: we keep the regions matching $P_{pos}$ but actively suppress those matching $P_{neg}$:
 \begin{equation}
     \mathbf{F}_{refined} = \mathbf{F}_{freq} \odot \mathbf{G}_{inc} \odot (1 - \mathbf{G}_{exc})
 \end{equation}
-This operator suppresses features that align with the forbidden concept.
+This operator effectively turns off features that align with the forbidden concept, allowing the model to carve out the target object even when it overlaps with the excluded region.
 
-\paragraph{3.4. Exclusion Loss.}
-Implicit supervision fails to teach the model negation. Therefore, we introduce an \textbf{exclusion loss} ($L_{excl}$). During training, we utilize multi-class ground truth to directly supervise the Exclusion Path ($\mathbf{G}_{exc}$), forcing it to detect the excluded class with high accuracy. This ensures the suppression term $(1 - \mathbf{G}_{exc})$ receives strong gradient signals during training.
+\paragraph{Exclusion Loss.}
+Implicit supervision (hoping the model figures out what not to segment) is insufficient for teaching strict negation. To fix this, we introduce an \textbf{exclusion loss} ($L_{excl}$). During training, we use multi-class ground truth to directly supervise the Exclusion Path ($\mathbf{G}_{exc}$). We force this path to detect the excluded class explicitly. This ensures that the suppression term $(1 - \mathbf{G}_{exc})$ receives strong, direct gradient signals.
 \begin{equation}
     L_{total} = L_{Dice}(\mathbf{Y}_{pred}, \mathbf{Y}_{target}) + \lambda L_{BCE}(\mathbf{G}_{exc}, \mathbf{Y}_{avoid})
 \end{equation}
+
+\paragraph{SemantiBench}
+\label{sec:semantibench}
+
+Existing benchmarks typically test object recognition using simple nouns (e.g., "Segment the Liver"). They fail to test if a model actually understands descriptive logic or negation. To rigorously evaluate this, we built \textbf{SemantiBench}, a dataset specifically designed to probe semantic compliance.
+
+\paragraph{Prompt Generation Pipeline.}
+We need to ensure that our Exclusionary ($L_3$) prompts map to ground-truth masks that are distinct from the atomic ($L_1$) masks. Handling label ambiguity is a known challenge in medical segmentation~\cite{zhang2023learning}, especially for hierarchical structures like tumors. We use multi-label datasets (such as KiTS23 and MSD-Liver) where sub-regions are clearly annotated (e.g., Kidney=1, Tumor=2, Cyst=3). We map these to three distinct levels of complexity:
+
+\begin{itemize}
+    \item \textbf{$L_1$ (Atomic):} "Kidney." The target is the Union of labels 1, 2, and 3. This tests basic recognition.
+    \item \textbf{$L_2$ (Descriptive):} "The bean-shaped organ..." The target remains the Union(1, 2, 3). Since the target is identical to $L_1$, we use this to measure \textbf{Invariance}: does the model produce the same mask when the prompt changes from a name to a description?
+    \item \textbf{$L_3$ (Compliance):} "Kidney excluding tumor." The target is now Label 1 only. Here, the target mask actually changes. We measure \textbf{Compliance}: can the model adjust its boundary based on the logical instruction?
+\end{itemize}
+
+This structured mapping prevents the ground truth paradox, where a model is penalized for correctly excluding a region that is present in the static mask of a generic dataset.
+
+\paragraph{Verification Loop.}
+Synthetic data generation entails a risk of hallucination (generating descriptions for attributes that do not exist in the specific image slice)~\cite{granstedt2025hallucinations}. To mitigate this, we implemented a strict verification loop. A Vision-Language Model (GPT-4V) acts as a quality assurance agent. It reviews each generated prompt against the image slice. The VLM verifies that the attribute described (e.g., cyst) is visibly present. If the attribute is missing or ambiguous, we discard the prompt from the benchmark. This ensures that SemantiBench measures the model's ability to segment, not its ability to guess.
